@@ -33,10 +33,11 @@ include_once(WP_PUBMED_REFLIST_PLUGIN_DIR."/class.PMIDeFetch.php");
 function wp_pubmed_reflist_shorttag($atts) {
 	extract(shortcode_atts(array(
 	'key'         => '',
-	'limit'         => ''
+	'limit'         => '',
+	'linktext'	=> 'Search PubMed'
 	), $atts));
 	$p = new wpPubMedRefList;
-	return $p->wp_pubmed_reflist($key,$limit);
+	return $p->wp_pubmed_reflist($key,$limit, $linktext);
 }
 
 add_shortcode( 'pmid-refs', 'wp_pubmed_reflist_shorttag');

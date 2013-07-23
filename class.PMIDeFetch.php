@@ -81,7 +81,7 @@ class PMIDeFetch{
 	}
 	
 	function pubmed_data(){
-		return $this->pmidObj->PubmedArticle->PubmedData;
+		return $this->pmidObj->PubmedData;
 	}
 	
 	function xrefs(){

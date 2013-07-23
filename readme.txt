@@ -4,7 +4,7 @@ Tags: shortcodes, pubmed, references
 Requires at least: 3.0
 Tested up to: 3.5.1
 Donate link:http://biochemistry.tamu.edu/index.php/alum/giving/
-Stable tag: 0.4
+Stable tag: 0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,7 +57,10 @@ n/a
 TODO:
 * input validation for the admin page
 * jquery datatables for settings view
-
+= 0.5 =
+* Add fulltext and PMC links
+* Allow customization of text link to pubmed
+* change display if there are zero hits
 = 0.4 =
 * integrate non-PMID citations
 = 0.3 =
