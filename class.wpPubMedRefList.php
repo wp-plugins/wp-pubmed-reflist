@@ -22,6 +22,7 @@ class wpPubMedRefList{
 		$this->query = $this->build_recursive_query($key);
 		$this->query = str_replace("\n",' ', $this->query);
 		$this->query = preg_replace('/\s+/','+', $this->query);
+
 		# if we just want the pubmed link don't bother with doing a query
 		$showlink = strtolower($showlink);
 		if($showlink != 'link only'){
@@ -102,13 +103,6 @@ class wpPubMedRefList{
 				$p = new PMIDeFetch($article);
 				$citation = $p->citation(); 
 				$refs['pmid'][] = $citation;
-/*					$citation['Authors'].
-					' ('.$citation['Year'].') '.
-					"<a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&amp;db=pubmed&amp;dopt=Abstract&amp;list_uids=".$citation['PMID']."'>".$citation['Title']."</a> ".
-					'<i>'.$citation['Journal'].'</i> '.
-					'<b>'.$citation['Volume'].'</b>: '.
-					$citation['Pages']; */
-				
 			}
 		}
 		
