@@ -5,7 +5,7 @@ Description: Shorttag Plugin to view an reference list from a pubmed query. use 
 where keys are associated with queries via a Settings page.
 example:
 [pmid-refs key="hu" limit=10]. 
-Version: 0.8
+Version: 0.9
 Author: JimHu
 Author URI: http://ecoliwiki.net
 License: GPL2

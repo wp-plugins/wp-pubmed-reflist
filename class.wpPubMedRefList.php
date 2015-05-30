@@ -22,7 +22,6 @@ class wpPubMedRefList{
 		$this->query = $this->build_recursive_query($key);
 		$this->query = str_replace("\n",' ', $this->query);
 		$this->query = preg_replace('/\s+/','+', $this->query);
-
 		# if we just want the pubmed link don't bother with doing a query
 		$showlink = strtolower($showlink);
 		if($showlink != 'link only'){
@@ -78,7 +77,7 @@ class wpPubMedRefList{
 		
 		# Step 1: Call esearch to get a list of PMIDs
 		$limit = abs($limit);
-		$query = str_replace(' ','+',$query)."&dispmax=$limit";
+		$query = str_replace(' ','+',$query)."&retmax=$limit";
 		$url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=$query";
 		$encoded_url = urlencode($url);
 		$xml = simplexml_load_file($encoded_url); 

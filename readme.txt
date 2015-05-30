@@ -4,7 +4,7 @@ Tags: shortcodes, pubmed, references
 Requires at least: 3.0
 Tested up to: 4.1
 Donate link:http://biochemistry.tamu.edu/index.php/alum/giving/
-Stable tag: 0.8
+Stable tag: 0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,8 @@ n/a
 TODO:
 * input validation for the admin page
 * jquery datatables for settings view
+= 0.9 =
+* Fix bug to allow more than 20 references to be retrieved
 = 0.8 =
 * Fixed markdown in readme
 * add _TitleL formatting tag for Title with link

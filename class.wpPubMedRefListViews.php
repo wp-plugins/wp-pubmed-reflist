@@ -46,20 +46,20 @@ class wpPubMedReflistViews{
 			$reference = $template;
 			# authorlist
 			$reference = str_replace('_Author', $this->authorlist($ref, $formats['styleprops'][$style]), $reference);
-			# other fields
+			# Epub date
+			$reference = str_replace('_Epub', $ref['EPub'], $reference);
+			# title
 			$ref['Title'] = self::italicize($ref['Title'], $formats);
+			# do _TitleL first or _Title will hit it.
+			# Links
+			$fields = array('_TitleL','_DOI','_PMIDL','_PMID','_PMCL', '_PMC');
+			foreach ($fields as $field){
+				$reference = str_replace($field, $this->links($ref, $field), $reference);
+			}
+			# other fields
 			$fields = array('_Year','_Title','_Journal','_Volume', '_Issue', '_Pages' );
 			foreach ($fields as $field){
 				$reference = str_replace( $field, $ref[trim($field,'_')], $reference);
-			}
-			# Epub date
-			$reference = str_replace('_Epub', $ref['EPub'], $reference);
-			$linksfields = array('','','');
-			
-			# Links
-			$fields = array('_DOI','_PMIDL','_PMID','_PMCL', '_PMC');
-			foreach ($fields as $field){
-				$reference = str_replace($field, $this->links($ref, $field), $reference);
 			}
 			# clean up some formatting issues
 			$reference = str_replace(array('..','. .','()'), array('.','.',''), $reference);
@@ -120,6 +120,7 @@ class wpPubMedReflistViews{
 				$prefix = 'PubMed ';
 			case '_PMID':
 				if(isset($ref['PMID'])){
+					# should never evaluate false, since the refs are from pubmed, but just in case
 					$pmid = $ref['PMID'];			
 					$text = "$prefix<a href='http://www.ncbi.nlm.nih.gov/pubmed/$pmid'>PMID:$pmid</a>";
 				}
@@ -132,6 +133,15 @@ class wpPubMedReflistViews{
 					$text = "$prefix<a href='http://www.ncbi.nlm.nih.gov/pmc/articles/$pmcid'>$pmcid</a>";
 				}
 				break;	
+			case '_TitleL':	
+				if(isset($ref['PMID'])){
+					# should never evaluate false, since the refs are from pubmed, but just in case
+					$pmid = $ref['PMID'];			
+					$text = "<a href='http://www.ncbi.nlm.nih.gov/pubmed/$pmid'>".$ref['Title']."</a>";
+				}else{
+					$text = $ref['Title'];
+				}
+			
 		}
 		return $text;
 	}
@@ -209,6 +219,7 @@ class wpPubMedReflistViews{
 <tr><td>_Author</td><td>Author list</td><tr>
 <tr><td>_Year</td><td>Year</td><tr>
 <tr><td>_Title</td><td>Title</td><tr>
+<tr><td>_TitleL</td><td>Title with link to Pubmed</td><tr>
 <tr><td>_Volume</td><td>Volume</td><tr>
 <tr><td>_Issue</td><td>Issue</td><tr>
 <tr><td>_Pages</td><td>Pages</td><tr>
