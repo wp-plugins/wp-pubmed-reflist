@@ -74,6 +74,10 @@ class wpPubMedRefListSettings{
 		global $new_whitelist_options;
 		$this->options = get_option('wp_pubmed_reflist');
 		$this->formats = get_option('wp_pubmed_reflist_styles');
+		# stylelist will be empty on first install or upgrade from < 0.9; initialize to squelch warning in set_default_styles
+		if(!isset($this->formats['stylelist'])){
+			$this->formats['stylelist'] = array();
+		}
 		# set default style to NIH if it isn't set
 		if(!isset($this->formats['default_style'])) $this->formats['default_style'] = 'NIH';
 
@@ -162,6 +166,19 @@ class wpPubMedRefListSettings{
 			'wp_pubmed_reflist_styles',        	# page
 			'wp_pubmed_itals'              	# section
 			);
+		add_settings_section(
+			'wp_pubmed_bolds',      	# id
+			'Highlighted words',                       	# title
+			'wpPubMedReflistViews::styles_bold_form_text',	# callback 
+			'wp_pubmed_reflist_styles'               	# page
+			);
+		add_settings_field(
+			'wp_pubmed_style_bold',         	# id
+			'',                              	# title
+			array($this,'styles_bold_form'),   	# callback
+			'wp_pubmed_reflist_styles',        	# page
+			'wp_pubmed_bolds'              	# section
+			);
 	}
 
 
@@ -180,7 +197,15 @@ class wpPubMedRefListSettings{
 		global $new_whitelist_options;
 		echo "<h2>PubMed Reflist</h2>
 		Manage PubMed queries for use with the [pmid-refs key=<key> limit=<number>] shorttag.";
-		echo 
+		
+		$wpPubMedRefList = new wpPubMedRefList;
+		if($wpPubMedRefList->remote_method == ''){
+			wpPubMedReflistViews::noFetchMethod();
+			return true;
+		}else{
+			# for testing
+		#	echo "<p>$wpPubMedRefList->remote_method</p>";
+		}
 "<div class='wrap'>";
 		/*
 		Tabbed management
@@ -402,13 +427,6 @@ class wpPubMedRefListSettings{
 	The form that adds new styles gets submitted each time whether or not there is anything new
 	We use hidden input fields to make sure we keep all the old values
 	*/
-	function styles_ital_form(){
-		$itals = '';
-		if($this->formats && isset($this->formats['itals']) ) $itals = $this->formats['itals'];
-		echo "<textarea id='wp_pubmed_reflist_stylelist' ".
-			"name='wp_pubmed_reflist_styles[itals]' 
-			cols='40' rows='10' >$itals</textarea>";	
-	}
 	
 	function set_default_styles(){
 		$this->default_styles = array('ASM','Cell', 'NIH','PNAS');
@@ -457,6 +475,21 @@ class wpPubMedRefListSettings{
 
 	}
 	
+	function styles_ital_form(){
+		$itals = '';
+		if($this->formats && isset($this->formats['itals']) ) $itals = $this->formats['itals'];
+		echo "<textarea id='wp_pubmed_reflist_stylelist' ".
+			"name='wp_pubmed_reflist_styles[itals]' 
+			cols='40' rows='10' >$itals</textarea>";	
+	}
+
+	function styles_bold_form(){
+		$itals = '';
+		if($this->formats && isset($this->formats['bold']) ) $itals = $this->formats['bold'];
+		echo "<textarea id='wp_pubmed_reflist_stylelist' ".
+			"name='wp_pubmed_reflist_styles[bold]' 
+			cols='40' rows='10' >$itals</textarea>";	
+	}
 	/*
 	Input validation
 	TODO!

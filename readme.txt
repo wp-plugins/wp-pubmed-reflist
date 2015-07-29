@@ -2,9 +2,9 @@
 Contributors: Jim Hu
 Tags: shortcodes, pubmed, references
 Requires at least: 3.0
-Tested up to: 4.1
+Tested up to: 4.2
 Donate link:http://biochemistry.tamu.edu/index.php/alum/giving/
-Stable tag: 0.9
+Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,11 @@ n/a
 TODO:
 * input validation for the admin page
 * jquery datatables for settings view
+= 1.0 =
+* Add ability to select more than one reference at random
+* Add strong emphasis for specific authors
+* Add ability to use curl vs remote file opening, and to throw an error if neither is available.
+* minor bug fixes
 = 0.9 =
 * Fix bug to allow more than 20 references to be retrieved
 = 0.8 =

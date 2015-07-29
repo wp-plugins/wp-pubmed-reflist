@@ -2,20 +2,29 @@
 class wpPubMedRefList{
 	
 	private $options = array();
+	public $remote_method = '';
 
 	function __construct(){
 		$this->options = get_option('wp_pubmed_reflist');	
+		if( ini_get('allow_url_fopen') ) {
+   			$this->remote_method = 'allow_url_fopen';
+		}elseif(function_exists('curl_version')){
+		   	$this->remote_method = 'curl';
+		}
 	}
 	
 	/*
 	key is the key to a particular query, e.g. a faculty name
+	
+	2015-07-21
+	Add subset parameter for random subset > 1. Subset ONLY applies when random is set via negative limit.
 	
 	2015-01-25
 	Current caching system is probably inefficient, since it caches the final html. This can be redundant if the same 
 	query is using different formatting options. But that shouldn't happen too often.
 	
 	*/
-	function wp_pubmed_reflist($key, $limit=50, $style, $wrap, $linktext, $showlink){
+	function wp_pubmed_reflist($key, $limit=50, $style, $wrap, $linktext, $subset = 1, $showlink){
 
 		$debug = false;
 		$html =  $msg = '';
@@ -41,7 +50,7 @@ class wpPubMedRefList{
 				$msg = "updating from pubmed last update:".date("Y-m-d H:i:s", @$this->options['facprops'][$cache_key]['last_update']);
 				$query_results = $this->reflist_query($key, $limit);
 				$formatter = new wpPubMedReflistViews();
-				$this->options['facprops'][$cache_key]['reflist'] = $formatter->format_refs($query_results, $style, $wrap, $limit);
+				$this->options['facprops'][$cache_key]['reflist'] = $formatter->format_refs($query_results, $style, $wrap, $limit, $subset);
 			
 				# update the timestamp array
 				$this->options['facprops'][$cache_key]['last_update'] = time();
@@ -79,20 +88,20 @@ class wpPubMedRefList{
 		$limit = abs($limit);
 		$query = str_replace(' ','+',$query)."&retmax=$limit";
 		$url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=$query";
-		$encoded_url = urlencode($url);
-		$xml = simplexml_load_file($encoded_url); 
+		$xml = $this->fetchXML($url); 
 		# extract PMIDs
 		$id_list = array();
-		foreach ($xml->IdList->Id as $pmid){ 
-			$id_list[] = (string)$pmid;
+		if(isset($xml->IdList->Id)){
+			foreach ($xml->IdList->Id as $pmid){ 
+				$id_list[] = (string)$pmid;
+			}
 		}
 		#Step 2 call efetch to get the actual citations
 		$refs = array();
 		$refs['pmid'] = array();
 		if(!empty($id_list) ){
 			$url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=".implode(',',$id_list)."&retmode=xml";
-			$encoded_url = urlencode($url);
-			$xml = simplexml_load_file($encoded_url); 
+			$xml = $this->fetchXML($url);
 		
 			$i = 0;
 
@@ -174,11 +183,23 @@ class wpPubMedRefList{
 			}
 			return false;
 	}
-	/**
-	* Include the shortscriptfunctions for refs
-	* 
-	* enables:
-	* [pmid-refs query="blah blah"]
-	* 
-	*/
+	
+	function fetchXML($url){
+		switch($this->remote_method){
+			case 'allow_url_fopen':
+				$encoded_url = urlencode($url);
+				$xml = simplexml_load_file($encoded_url);
+				break;
+			case 'curl':
+		  		$ch = curl_init($url);    
+		 		curl_setopt  ($ch, CURLOPT_HEADER, false); 
+		 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);    
+		  		$string = curl_exec($ch);
+		  		$xml = simplexml_load_string($string);
+				break;
+		}		
+		return $xml;
+	}
+
+
 }

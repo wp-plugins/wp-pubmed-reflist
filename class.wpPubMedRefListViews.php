@@ -28,13 +28,21 @@ class wpPubMedReflistViews{
 	}
 	
 	public static function styles_ital_form_text(){
-		echo "List of items that should be italicized in article titles (e.g. species names). Enter one item per line";
+		echo "List of items that should be <i>italicized</i> in article titles (e.g. species names). Enter one item per line";
+	}
+
+	public static function styles_bold_form_text(){
+		echo "List of items that should be get the html <strong>strong</strong> tag in article author lists (e.g. author names). Enter one item per line";
+	}
+
+	public static function noFetchMethod(){
+		echo "<p><span style='color:red;'>WP Pubmed Reflist cannot find a method to fetch remote results from Pubmed.</span></p><p> Please check your PHP configuration and/or contact your hosting provider to see if either allow_url_fopen or curl can be used on your Wordpress installation</p>";
 	}
 
 	/*
 	Takes array of query results and formats based on a style
 	*/
-	public function format_refs($refs, $style, $wrap, $limit){
+	public function format_refs($refs, $style, $wrap, $limit, $subset = 1){
 		$html = '';
 		$reflist = array();
 		$formats = get_option('wp_pubmed_reflist_styles');
@@ -46,6 +54,7 @@ class wpPubMedReflistViews{
 			$reference = $template;
 			# authorlist
 			$reference = str_replace('_Author', $this->authorlist($ref, $formats['styleprops'][$style]), $reference);
+			$reference = self::bold($reference, $formats);
 			# Epub date
 			$reference = str_replace('_Epub', $ref['EPub'], $reference);
 			# title
@@ -68,12 +77,17 @@ class wpPubMedReflistViews{
 		foreach($refs['extras'] as $extra){
 			if($extra != '') $reflist[] = $extra;
 		}
-		#echo "<pre>".print_r($reflist, true)."</pre>";
 		if ($limit < 0){	
 			$limit = abs($limit) - 1;
 			if(count($reflist) < $limit) $limit = count($reflist);
-			$k = rand(0, $limit-1);
-			$reflist = array($reflist[$k]); 
+			# slice the array to the number set by limit
+			$reflist = array_slice($reflist, 0, $limit);
+			# make sure $subset is <= $limit
+			$subset = min($subset, $limit);
+			# shuffle and take the subset
+			shuffle($reflist);
+			$reflist = array_slice($reflist, 0, $subset);
+		#	echo "<pre>".print_r($reflist, true)."</pre>subset:$subset limit:$limit";
 		}		
 		# wrap the references in $wrap
 		switch ($wrap){
@@ -146,7 +160,7 @@ class wpPubMedReflistViews{
 		return $text;
 	}
 	/*
-	italicize species names
+	italicize specified strings, e.g. species names
 	*/
 	static function italicize($text, $formats){
 	#	echo "<br>".__METHOD__."<br><pre>".print_r($formats, true)."</pre><br>";
@@ -154,7 +168,21 @@ class wpPubMedReflistViews{
 		foreach ($ital_list as $ital_item){
 			$ital_item = trim($ital_item);
 			if($ital_item == '') continue;
-			$text = preg_replace("/\b($ital_item)\b/", '<i>$0</i>', $text );
+			$text = str_replace("$ital_item", "<i>$ital_item</i>", $text );
+		}
+		return $text;
+	}
+	
+	/*
+	boldface specified strings, e.g. specific authors
+	*/
+	static function bold($text, $formats){
+		$bold_list = explode("\n", $formats['bold']);
+		#echo "<br>".__METHOD__."<br><pre>".print_r($bold_list, true)."</pre><br>";
+		foreach ($bold_list as $bold_item){
+			$bold_item = trim($bold_item);
+			if($bold_item == '') continue;
+			$text = str_replace("$bold_item", "<strong>$bold_item</strong>", $text );
 		}
 		return $text;
 	}
@@ -174,7 +202,7 @@ class wpPubMedReflistViews{
 	<p>The [pmid-refs] shortcode has one required parameter and several optional ones</p>
 	<ul>
 	<li><b>key</b> [<i>required</i>] the key for the query to run</li>
-	<li><b>limit</b> if positive, this determines the number of references to show. If negative, one reference will be randomly selected every day from a pool set by limit </li>
+	<li><b>limit</b> if positive, this determines the number of references to show. If negative, one reference will be randomly selected every day from a pool set by limit. use <b>subset</b> to show a random subset of the limit references (only applies if limit is negative). </li>
 	<li><b>style</b> Use this to change the formatting of the references</li>
 	<li><b>wrap</b> Sets how to display the list. The default is to make an ordered list (numbered). Other allowed values are 'p' for paragraphs and 'ul' for an unordered list (bullets)</li>
 	<li><b>linktext</b> What to show on the link that runs the query on Pubmed. Default is 'Search PubMed'</li>
@@ -235,6 +263,8 @@ class wpPubMedReflistViews{
 	<p>Styles can set how many authors to display before using <i>et al.</i>. There are two numbers that control this: a <b>limit</b> and a <b>show</b> number. If the display number is not set, the maximum number of authors shown will be the same as the limit. </p>
 	<h3>Italicizing keywords</h3>
 	<p>Starting with version 0.7 WP Pubmed Reflist keeps a list of keywords/phrases that will be automatically italicized in titles. This can be used for things like species names or other latin phrases. Some examples are preloaded, but you can edit the list.</p>
+	<h3>Bolding authors</h3>
+	Starting in version 1.0, you can set a list of authors to show with the <strong>strong</strong> tag. Note that this looks for exact matches, so it may be sensitive to specific formats.
 	<h2>Bug reports and suggestions</h2>
 	<p>I think I've figured out how to get wordpress.org to email me when <a href='https://wordpress.org/support/plugin/wp-pubmed-reflist'>support posts are made</a>. </p>
 	<h2>Donate</h2>
